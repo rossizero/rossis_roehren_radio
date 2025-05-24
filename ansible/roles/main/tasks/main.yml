@@ -1,3 +1,4 @@
+---
 - name: Ensure venv directory exists
   file:
     path: /home/{{ user }}/{{ folder }}/venv
