@@ -1,0 +1,52 @@
+---
+- name: Install required packages
+  apt:
+    name:
+      - pulseaudio
+      - pulseaudio-module-bluetooth
+      - bluez
+    state: present
+    update_cache: true
+
+- name: Ensure Bluetooth agent script is in place
+  template:
+    src: bt-speaker-agent.sh.j2
+    dest: /usr/local/bin/bt-speaker-agent.sh
+    mode: '0755'
+
+# 1. Setze Bluetooth-Konfiguration
+- name: Ensure bluetooth config is updated
+  blockinfile:
+    path: /etc/bluetooth/main.conf
+    block: |
+      [General]
+      Name = {{ bluetooth_device_name }}
+      DiscoverableTimeout = 300
+      PairableTimeout = 0
+      Discoverable = true
+      Pairable = true
+      Class = 0x200414
+
+# 2. Bluetooth-Dienst neu starten, um Config zu laden
+- name: Restart Bluetooth service to apply config
+  systemd:
+    name: bluetooth
+    state: restarted
+
+# 3. Deploy systemd unit
+- name: Deploy systemd service unit
+  template:
+    src: bt-speaker.service.j2
+    dest: /etc/systemd/system/bt-speaker.service
+
+# 4. Reload systemd daemon
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+# 5. Enable & start bt-speaker
+- name: Enable and start Bluetooth speaker service
+  systemd:
+    name: bt-speaker
+    enabled: true
+    state: started

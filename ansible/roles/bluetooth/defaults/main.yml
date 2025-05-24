@@ -1,0 +1,4 @@
+---
+bluetooth_discoverable: true
+bluetooth_pairable: true
+bluetooth_device_name: Ansible BT

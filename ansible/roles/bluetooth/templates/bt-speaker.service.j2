@@ -1,0 +1,12 @@
+[Unit]
+Description=Bluetooth Speaker Auto Agent
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/bt-speaker-agent.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

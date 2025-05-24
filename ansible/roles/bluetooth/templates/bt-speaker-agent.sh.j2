@@ -1,0 +1,12 @@
+#!/bin/bash
+
+bluetoothctl << EOF
+system-alias {{ bluetooth_device_name }}
+power on
+agent NoInputNoOutput
+default-agent
+discoverable on
+pairable on
+discoverable-timeout 300
+pairable-timeout 0
+EOF
