@@ -1,0 +1,7 @@
+---
+# handlers file for main
+- name: Restart rossis_roehren_radio service
+  systemd:
+    name: rossis_roehren_radio.service
+    state: restarted
+    daemon_reload: yes

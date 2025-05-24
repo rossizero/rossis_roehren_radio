@@ -1,0 +1,11 @@
+- name: Run playbook locally
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become: true
+
+  vars:
+    user: develop
+
+  roles:
+    - main
