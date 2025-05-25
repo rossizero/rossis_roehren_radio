@@ -8,6 +8,22 @@
     state: present
     update_cache: true
 
+- name: Enable PulseAudio user service
+  become: false
+  ansible.builtin.command: >
+    systemctl --user enable pulseaudio.service
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_uid }}"
+  when: ansible_user_id != 'root'
+
+- name: Start PulseAudio user service
+  become: false
+  ansible.builtin.command: >
+    systemctl --user start pulseaudio.service
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_uid }}"
+  when: ansible_user_id != 'root'
+
 - name: Ensure Bluetooth agent script is in place
   template:
     src: bt-speaker-agent.sh.j2
@@ -26,6 +42,15 @@
       Discoverable = true
       Pairable = true
       Class = 0x200414
+
+- name: Ensure PulseAudio bluetooth modules are loaded
+  blockinfile:
+    path: /etc/pulse/default.pa
+    marker: "# {mark} ANSIBLE BLUETOOTH MODULES"
+    block: |
+      load-module module-bluetooth-policy
+      load-module module-bluetooth-discover
+  notify: Restart pulseaudio
 
 # 2. Bluetooth-Dienst neu starten, um Config zu laden
 - name: Restart Bluetooth service to apply config

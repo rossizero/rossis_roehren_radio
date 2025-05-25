@@ -1,9 +1,11 @@
 #!/bin/bash
 
+sleep 3
+
 bluetoothctl << EOF
-system-alias {{ bluetooth_device_name }}
+system-alias "{{ bluetooth_device_name }}"
 power on
-agent NoInputNoOutput
+agent KeyboardDisplay 
 default-agent
 discoverable on
 pairable on
