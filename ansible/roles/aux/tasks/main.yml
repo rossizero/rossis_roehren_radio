@@ -1,0 +1,34 @@
+- name: Install required packages
+  apt:
+    name:
+      - alsa-utils
+      - sox
+    state: present
+    update_cache: true
+
+### set default audio output to builtin aux
+- name: Ensure user config directory exists
+  file:
+    path: /home/{{ user }}/.config/pipewire/pipewire-pulse.conf.d
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0755
+
+- name: Set default sink to AUX (3.5mm analog out)
+  copy:
+    dest: /home/{{ user }}/.config/pipewire/pipewire-pulse.conf.d/10-default-sink.conf
+    content: |
+      context.properties = {
+          default.audio.sink = "{{ aux_device }}"
+      }
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0644
+
+- name: Restart PipeWire to apply changes
+  become_user: "{{ user }}"
+  systemd:
+    name: pipewire
+    state: restarted
+    scope: user

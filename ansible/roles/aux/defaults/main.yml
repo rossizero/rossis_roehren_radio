@@ -1,0 +1,4 @@
+---
+# defaults file for aux
+user: develop
+aux_device: alsa_output.platform-fe00b840.mailbox.stereo-fallback   ### pactl list short sinks

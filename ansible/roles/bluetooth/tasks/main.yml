@@ -5,6 +5,7 @@
       - pulseaudio
       - pulseaudio-module-bluetooth
       - bluez
+      - bluez-tools
     state: present
     update_cache: true
 

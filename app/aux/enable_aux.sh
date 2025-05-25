@@ -1,0 +1,1 @@
+arecord -f cd -D plughw:3,0 | aplay -D plughw:2,0

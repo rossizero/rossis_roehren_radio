@@ -4,6 +4,7 @@ ansible/roles/*
 # But keep custom local roles
 !ansible/roles/main/
 !ansible/roles/bluetooth/
+!ansible/roles/aux/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
