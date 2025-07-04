@@ -3,6 +3,7 @@
     name:
       - alsa-utils
       - sox
+      - eject
     state: present
     update_cache: true
 
