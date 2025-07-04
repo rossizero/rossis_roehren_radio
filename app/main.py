@@ -6,7 +6,9 @@ import time
 CHIP_NAME = "/dev/gpiochip0"
 chip = gpiod.Chip(CHIP_NAME)
 
-gpio_pins = [17, 27]
+gpio_pins = [9, 10, 24, 23, 22, 27, 17]
+# grün blau lila grau gelb rot orange
+
 settings = LineSettings(
     direction=Direction.INPUT,
     bias=Bias.PULL_UP
