@@ -1,4 +1,5 @@
 ---
 # defaults file for main
 user: develop
+user_id: 1000 # id -u develop
 folder: rossis-roehren-radio

@@ -12,15 +12,28 @@
   args:
     creates: /home/{{ user }}/{{ folder }}/venv/bin/activate
 
+- name: Install smbus2 in venv
+  pip:
+    name: smbus2
+    virtualenv: /home/{{ user }}/{{ folder }}/venv
+
 - name: Install gpiod in venv
   pip:
     name: gpiod
     virtualenv: /home/{{ user }}/{{ folder }}/venv
 
-- name: Copy Python script
+- name: Ensure src directory exists for scripts
+  file:
+    path: /home/{{ user }}/{{ folder }}/src
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0755'
+
+- name: Copy Python scripts
   copy:
-    src: "{{ playbook_dir }}/../app/main.py"
-    dest: /home/{{ user }}/{{ folder }}/main.py
+    src: "{{ playbook_dir }}/../app/src/"
+    dest: /home/{{ user }}/{{ folder }}/src/
     owner: "{{ user }}"
     group: "{{ user }}"
     mode: '0755'
@@ -32,14 +45,16 @@
     content: |
       [Unit]
       Description=Rossis Roehren Radio Script
-      After=network.target
+      After=sound.target
 
       [Service]
-      ExecStart=/home/{{ user }}/{{ folder }}/venv/bin/python /home/{{ user }}/{{ folder }}/main.py
+      Environment="XDG_RUNTIME_DIR=/run/user/{{ user_id }}" 
+      ExecStart=/home/{{ user }}/{{ folder }}/venv/bin/python /home/{{ user }}/{{ folder }}/src/main.py
       WorkingDirectory=/home/{{ user }}/{{ folder }}
       StandardOutput=journal
       StandardError=journal
       Restart=always
+      RestartSec=5
       User={{ user }}
 
       [Install]
