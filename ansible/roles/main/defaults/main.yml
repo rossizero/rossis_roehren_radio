@@ -3,3 +3,8 @@
 user: develop
 user_id: 1000 # id -u develop
 folder: rossis-roehren-radio
+
+wifi_interface: "wlan0"
+wifi_connection_name: "RossisRoehrenRadio"
+wifi_ssid: ""
+wifi_psk: ""

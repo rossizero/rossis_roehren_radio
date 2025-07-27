@@ -1,0 +1,37 @@
+
+- name: Ensure NetworkManager is active
+  ansible.builtin.service:
+    name: NetworkManager
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Ensure WiFi radio is enabled
+  ansible.builtin.command:
+    cmd: nmcli radio wifi on
+  changed_when: false
+  become: yes
+
+- name: Ensure old WiFi connection profile is absent
+  community.general.nmcli:
+    conn_name: "{{ wifi_connection_name }}"
+    state: absent
+  ignore_errors: yes
+  become: yes
+
+#- name: Connect to the 'Smiley' WiFi network
+#  community.general.nmcli:
+#    conn_name: "RossisRoehrenRadio"
+#    ifname: "wlan0"
+#    type: "wifi"
+#    ssid: " :)"
+#    wifi_sec:
+#      key-mgmt: "wpa-psk"
+#      psk: "Schaezler17"
+#    state: present
+#  become: yes
+
+- name: Connect to the '{{ wifi_ssid }}' WiFi network using shell
+  ansible.builtin.shell:
+    cmd: "nmcli device wifi connect '{{ wifi_ssid }}' password '{{ wifi_psk }}' name '{{ wifi_connection_name }}' ifname '{{ wifi_interface }}'"
+  become: yes

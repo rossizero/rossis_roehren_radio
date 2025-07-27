@@ -1,4 +1,11 @@
 ---
+- name: Install required packages
+  apt:
+    name:
+      - network-manager
+    state: present
+    update_cache: true
+
 - name: Ensure venv directory exists
   file:
     path: /home/{{ user }}/{{ folder }}/venv
@@ -51,3 +58,6 @@
       [Install]
       WantedBy=multi-user.target
   notify: Restart rossis_roehren_radio service
+
+- name: Include and run WiFi configuration tasks
+  ansible.builtin.include_tasks: wifi.yml

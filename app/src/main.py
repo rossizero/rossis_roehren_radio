@@ -10,17 +10,16 @@ from flywheel import WheelControl
 CHIP_NAME = "/dev/gpiochip0"
 
 BUTTON_CONFIG = {
-    9: "all",
-    10: "spotifyd",
-    24: "bluetooth",
-    23: "cd",
-    22: "aux",
-    27: "radio",
-    17: "empty",
+    9: "all",           # grün
+    10: "spotifyd",     # blau
+    24: "bluetooth",    # lila
+    23: "cd",           # grau
+    22: "aux",          # gelb
+    27: "radio",        # rot
+    17: "empty",        # orange
 }
 
-# grün blau lila grau gelb rot orange
-FLYWHEEL_PINS = [2, 3]
+FLYWHEEL_PINS = [8, 7]
 
 class MainController:
     def __init__(self):

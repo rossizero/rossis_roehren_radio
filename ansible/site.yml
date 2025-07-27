@@ -10,7 +10,9 @@
     os: linux-aarch64
     spotify_device_name: "Rossis Röhren Radio"
     bluetooth_device_name: "{{ spotify_device_name }}"
-  
+    wifi_ssid: " :)"
+    wifi_psk: "Schaezler17"
+    
   roles:
     - main
     - spotifyd
