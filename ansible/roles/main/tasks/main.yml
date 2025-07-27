@@ -18,16 +18,16 @@
   command: python3 -m venv /home/{{ user }}/{{ folder }}/venv
   args:
     creates: /home/{{ user }}/{{ folder }}/venv/bin/activate
-
-- name: Install smbus2 in venv
+    
+- name: Install playsound in venv
   pip:
-    name: smbus2
+    name: 
+      - smbus2
+      - gpiod
+      - playsound
     virtualenv: /home/{{ user }}/{{ folder }}/venv
-
-- name: Install gpiod in venv
-  pip:
-    name: gpiod
-    virtualenv: /home/{{ user }}/{{ folder }}/venv
+  tags:
+    - python_deps
 
 - name: Copy Python scripts without .pyc files
   ansible.posix.synchronize:

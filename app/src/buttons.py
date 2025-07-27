@@ -71,8 +71,9 @@ class ButtonControl:
         if self._running:
             print("Monitoring is already active.")
             return
-            
-        self.last_states = self.lines.get_values()
+        
+        # default start, so we get if a button is already pressed before start of the pi
+        self.last_states = [Value.ACTIVE for _ in self.pins]
         self._running = True
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()

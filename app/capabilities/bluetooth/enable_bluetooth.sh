@@ -8,5 +8,6 @@ discoverable on
 pairable on
 EOF
 
-sudo bt-agent -c DisplayYesNo -p $(dirname $0)/pins.txt
+sudo bt-agent -c DisplayYesNo -p $(dirname $0)/pins.txt > /dev/null 2>&1 &
+
 

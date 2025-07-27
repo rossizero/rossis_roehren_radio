@@ -1,1 +1,1 @@
-arecord -f cd -D plughw:3,0 | aplay -D plughw:2,0
+(arecord -f cd -D plughw:3,0 | aplay -D plughw:2,0) > /dev/null 2>&1 &

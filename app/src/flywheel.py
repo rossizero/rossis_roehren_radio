@@ -16,7 +16,7 @@ class WheelControl:
     callback function upon detecting a full sequence.
     """
     
-    def __init__(self, pin_a, pin_b, callback, distance_m=0.02, timeout_s=2.0, 
+    def __init__(self, pin_a, pin_b, callback, distance_m=0.02, timeout_s=1.0, 
                  chip_name="/dev/gpiochip0", consumer="rotary_encoder"):
         """
         Initializes the Rotary Encoder monitor.
@@ -133,9 +133,15 @@ class WheelControl:
                     # This is the SECOND event from the OTHER sensor
                     elif current_pin != self.first_event_pin:
                         time_delta_ns = current_time_ns - self.first_event_time_ns
-                        
-                        if time_delta_ns > 0:
-                            time_delta_s = time_delta_ns / 1_000_000_000.0
+                        time_delta_s = time_delta_ns / 1_000_000_000.0
+
+                        # sometimes some weird shit happens when doing sth with aux or usb port
+                        # (or power)
+                        MIN_PLAUSIBLE_TIME_S = 0.005 
+                        if time_delta_s < MIN_PLAUSIBLE_TIME_S:
+                            self.first_event_pin = None 
+                            continue
+                        elif time_delta_ns > 0:
                             speed_mps = self.distance_m / time_delta_s
                             speed_kmh = speed_mps * 3.6
 
