@@ -1,7 +1,7 @@
 # KI - wird schon tun was es soll
 
 import gpiod
-from gpiod.line import Direction, Bias
+from gpiod.line import Direction, Bias, Value
 import threading
 import time
 
@@ -100,7 +100,7 @@ class ButtonControl:
                 if current_state != last_state:
                     # State has changed, trigger the callback
                     try:
-                        self.callback(pin, current_state)
+                        self.callback(pin, 1 if current_state is Value.ACTIVE else 0)
                     except Exception as e:
                         print(f"Error in user callback for pin {pin}: {e}")
                 

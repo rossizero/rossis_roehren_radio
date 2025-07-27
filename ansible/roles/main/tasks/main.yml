@@ -22,21 +22,12 @@
     name: gpiod
     virtualenv: /home/{{ user }}/{{ folder }}/venv
 
-- name: Ensure src directory exists for scripts
-  file:
-    path: /home/{{ user }}/{{ folder }}/src
-    state: directory
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    mode: '0755'
-
-- name: Copy Python scripts
-  copy:
-    src: "{{ playbook_dir }}/../app/src/"
-    dest: /home/{{ user }}/{{ folder }}/src/
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    mode: '0755'
+- name: Copy Python scripts without .pyc files
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/../app/"
+    dest: /home/{{ user }}/{{ folder }}/app/
+    rsync_opts:
+      - "--exclude=*.pyc"
   notify: Restart rossis_roehren_radio service
 
 - name: Create systemd service file
@@ -49,7 +40,7 @@
 
       [Service]
       Environment="XDG_RUNTIME_DIR=/run/user/{{ user_id }}" 
-      ExecStart=/home/{{ user }}/{{ folder }}/venv/bin/python /home/{{ user }}/{{ folder }}/src/main.py
+      ExecStart=/home/{{ user }}/{{ folder }}/venv/bin/python /home/{{ user }}/{{ folder }}/app/src/main.py
       WorkingDirectory=/home/{{ user }}/{{ folder }}
       StandardOutput=journal
       StandardError=journal

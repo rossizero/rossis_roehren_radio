@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+import subprocess
 import time
 import signal
 from volume import VolumeControl
@@ -5,7 +8,17 @@ from buttons import ButtonControl
 from flywheel import WheelControl
 
 CHIP_NAME = "/dev/gpiochip0"
-BUTTON_PINS = [9, 10, 24, 23, 22, 27, 17]
+
+BUTTON_CONFIG = {
+    9: "all",
+    10: "spotifyd",
+    24: "bluetooth",
+    23: "cd",
+    22: "aux",
+    27: "radio",
+    17: "empty",
+}
+
 # grün blau lila grau gelb rot orange
 FLYWHEEL_PINS = [2, 3]
 
@@ -29,24 +42,22 @@ class MainController:
         )
         
         self.bc = ButtonControl(
-            BUTTON_PINS, 
+            BUTTON_CONFIG.keys(), 
             self.button_callback,
             chip_name=CHIP_NAME,
             consumer=consumer_name
         )
         
         self._running = True
+        self.current_mode = 9
         print("Controller initialized.")
 
     def button_callback(self, pin, state):
         """Callback for button state changes."""
-        status = "Released" if state == 1 else "Pressed"
-        print(f"Button on GPIO {pin} was {status}")
-        
-        # Example: A specific button press (e.g., pin 17) stops the application
-        if pin == 17 and state == 0: # Assuming pin 17 is the 'exit' button
-            print("Exit button pressed. Shutting down...")
-            self.stop()
+        self._disable_all_capabilities()
+        if state == 0:
+            self._enable_capability(pin)
+        print(state, pin)
 
     def rotation_callback(self, direction, speed_kmh):
         """Callback for wheel rotation events."""
@@ -70,6 +81,7 @@ class MainController:
         print("Cleaning up resources...")
         self.wc.stop()  # This stops its internal thread and releases GPIO
         self.bc.close() # This stops its thread and releases GPIO
+        # self._disable_all_capabilities() TODO
         print("Cleanup complete.")
 
     def run(self):
@@ -83,12 +95,39 @@ class MainController:
         
         while self._running:
             time.sleep(0.5)
+    
+    def _get_capabiliy_path(self, pin, mode="disable"):
+        val = BUTTON_CONFIG[pin]
+        file = Path(__file__).resolve().parent
+        script_path = Path(os.path.join(file, "..", "capabilities", val, f"{mode}_{val}.sh"))
+        if script_path.exists():
+            print("requested path: ", script_path)
+            return script_path.resolve()
+        return None
+    
+    def _run_script(self, script_path):
+        if script_path is not None:
+            result = subprocess.run(['/bin/bash', script_path.resolve()], capture_output=True, text=True)
+            return result
+        return None
+
+    def _disable_all_capabilities(self):
+        for pin in BUTTON_CONFIG.keys():
+           self._disable_capability(pin)
+            
+    def _enable_capability(self, pin):
+        self._run_script(self._get_capabiliy_path(pin, "enable"))
+
+    def _disable_capability(self, pin):
+        self._run_script(self._get_capabiliy_path(pin, "disable"))
 
 
 if __name__ == "__main__":
     controller = None
     try:
         controller = MainController()
+        controller._disable_all_capabilities()
+        controller._enable_capability(10)
         def signal_handler(sig, frame):
             print(f"\nCaught signal {sig}. Initiating shutdown...")
             if controller:
