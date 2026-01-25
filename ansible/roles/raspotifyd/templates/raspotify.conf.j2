@@ -1,0 +1,10 @@
+# /etc/raspotify/conf
+# Managed by Ansible
+
+LIBRESPOT_NAME="{{ spotify_device_name }}"
+LIBRESPOT_BITRATE="{{ spotify_bitrate }}"
+LIBRESPOT_DEVICE="{{ spotify_device }}"
+LIBRESPOT_BACKEND="{{ spotify_backend }}"
+
+# Discovery (zeroconf) is enabled by default. 
+# No credentials needed if your phone is on the same WiFi.

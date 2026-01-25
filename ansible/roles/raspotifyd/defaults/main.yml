@@ -1,0 +1,3 @@
+spotify_bitrate: 320
+spotify_device: "default"  # Use `librespot -d ?` to find your card
+spotify_backend: "alsa"

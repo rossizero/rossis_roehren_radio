@@ -16,6 +16,6 @@
     
   roles:
     - main
-    - spotifyd
+    - raspotifyd
     - bluetooth
     - aux

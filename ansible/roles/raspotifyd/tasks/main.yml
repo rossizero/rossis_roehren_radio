@@ -1,0 +1,53 @@
+---
+- name: Install dependencies
+  apt:
+    name: 
+      - curl
+      - apt-transport-https
+      - gnupg
+    state: present
+  become: true
+
+- name: Create keyring directory
+  file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Add Raspotify GPG key
+  get_url:
+    url: https://dtcooper.github.io/raspotify/key.asc
+    dest: /usr/share/keyrings/raspotify_key.asc
+    mode: '0644'
+  become: true
+
+- name: Add Raspotify Repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/raspotify_key.asc] https://dtcooper.github.io/raspotify raspotify main"
+    filename: raspotify
+    state: present
+  become: true
+
+- name: Install Raspotify
+  apt:
+    name: raspotify
+    update_cache: yes
+    state: present
+  become: true
+
+- name: Configure Raspotify
+  template:
+    src: raspotify.conf.j2
+    dest: /etc/raspotify/conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart raspotify
+  become: true
+
+- name: Ensure Raspotify is enabled
+  systemd:
+    name: raspotify
+    enabled: yes
+  become: true

@@ -1,1 +1,1 @@
-sudo systemctl stop spotifyd.service 
+sudo systemctl stop raspotify

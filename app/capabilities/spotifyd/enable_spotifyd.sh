@@ -1,1 +1,1 @@
-sudo systemctl start spotifyd.service 
+sudo systemctl start raspotify

@@ -1,0 +1,6 @@
+---
+- name: Restart raspotify
+  systemd:
+    name: raspotify
+    state: restarted
+  become: true

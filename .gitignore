@@ -5,6 +5,7 @@ ansible/roles/*
 !ansible/roles/main/
 !ansible/roles/bluetooth/
 !ansible/roles/aux/
+!ansible/roles/raspotifyd/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
