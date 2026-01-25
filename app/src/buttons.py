@@ -106,7 +106,7 @@ class ButtonControl:
                         print(f"Error in user callback for pin {pin}: {e}")
                 
             self.last_states = current_states
-            time.sleep(0.1) # Poll ~20 times/sec. Adjust as needed.
+            time.sleep(0.5) # Poll ~20 times/sec. Adjust as needed.
 
     def close(self):
         """Stops monitoring and releases GPIO resources."""

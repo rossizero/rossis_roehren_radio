@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import threading
 from playsound import playsound
 import subprocess
 import time
@@ -7,6 +8,7 @@ import signal
 from volume import VolumeControl
 from buttons import ButtonControl
 from flywheel import WheelControl
+import web_server as web_server
 import math
 
 CHIP_NAME = "/dev/gpiochip0"
@@ -22,6 +24,8 @@ BUTTON_CONFIG = {
 }
 
 FLYWHEEL_PINS = [7, 8]  # change order to reverse the effect
+
+config_str = "1"
 
 class MainController:
     def __init__(self):
@@ -54,17 +58,43 @@ class MainController:
         self.current_mode = 9
         self.volume_speed = math.pi / 2.0
         self.max_volume_step = 13.13
+        self.lock_hardware_buttons = False
         print("Controller initialized.")
+
+    def _set_source(self, pin):
+        self._disable_all_capabilities(exception=[pin])  # to be safe
+        time.sleep(1)
+        self._enable_capability(pin)
 
     def button_callback(self, pin, state):
         """Callback for button state changes."""
-        print(state, pin, BUTTON_CONFIG[pin])
-        if state == 0:
-            self._disable_all_capabilities(exception=[pin])  # to be safe
-            time.sleep(1)
-            self._enable_capability(pin)
-        else:
-            self._disable_all_capabilities()
+        message = f"{'stop' if state else 'start'} {pin} {BUTTON_CONFIG[pin]}"
+        print(message)
+        if not self.lock_hardware_buttons:
+            web_server.print_to_log(message)
+        #if pin == 27:
+        #    return
+
+        # if hardware locked -> unlock when left button is pressed
+        if pin == 9:
+            web_server.set_source(pin)
+            self.lock_hardware_buttons = False
+            web_server.print_to_log("unlocked hardware buttons")
+        
+        if not self.lock_hardware_buttons:
+            print("changed")
+            if state == 0:
+                self._set_source(pin)
+                web_server.set_source_external(pin) # tell webserver
+            else:
+                if pin == self.current_mode:
+                    self._disable_all_capabilities()
+                    web_server.set_source_external(9)
+    
+    def set_source_external(self, pin):
+        self.lock_hardware_buttons = True # tell controller, website has control now -> lock buttons
+        web_server.print_to_log("locked hardware buttons")
+        self._set_source(pin)
 
     def rotation_callback(self, direction, speed_kmh):
         """Callback for wheel rotation events."""
@@ -73,6 +103,8 @@ class MainController:
         print(f"Wheel rotation in '{direction}' with speed: {speed_kmh:.2f} km/h and changing volume {change}")
         self.vc.change_volume(int(change))
         print(self.vc.get_volume())
+        web_server.print_to_log(f"Volume changed to: {self.vc.get_volume()}")
+        web_server.state.volume = self.vc.get_volume()
 
     def stop(self):
         """
@@ -138,6 +170,7 @@ class MainController:
         if sound_path.exists():
             print("playing")
             subprocess.run(['/bin/bash', sound_path.resolve()], capture_output=True, text=True)
+            
 
 if __name__ == "__main__":
     controller = None
@@ -154,6 +187,13 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
+        controller.vc.set_volume(33)
+        web_thread = threading.Thread(
+            target=web_server.run_web_server, 
+            args=(controller,),
+            daemon=True
+        )
+        web_thread.start()
         controller.play_intro()
         controller.run()
 

@@ -25,6 +25,8 @@
       - smbus2
       - gpiod
       - playsound
+      - fastapi
+      - uvicorn
     virtualenv: /home/{{ user }}/{{ folder }}/venv
   tags:
     - python_deps
@@ -61,3 +63,19 @@
 
 - name: Include and run WiFi configuration tasks
   ansible.builtin.include_tasks: wifi.yml
+
+- name: Set the hostname
+  become: yes
+  vars:
+    new_hostname: "{{ hostname }}"
+  block:
+    - name: Set system hostname
+      ansible.builtin.hostname:
+        name: "{{ new_hostname }}"
+
+    - name: Update /etc/hosts to prevent sudo lag/errors
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 {{ new_hostname }}"
+        state: present
