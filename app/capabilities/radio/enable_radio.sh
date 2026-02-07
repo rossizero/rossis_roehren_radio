@@ -1,5 +1,7 @@
 #!/bin/bash
 # radio-off - Mutes the radio module and stops the audio bridge.
+SCRIPT_DIR=$(dirname "$0")
+ffplay "$SCRIPT_DIR/radio.mp3" -autoexit -nodisp  > /dev/null 2>&1 &
 
 PID_FILE="/tmp/radio.pid"
 

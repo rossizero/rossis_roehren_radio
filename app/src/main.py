@@ -68,7 +68,7 @@ class MainController:
 
     def button_callback(self, pin, state):
         """Callback for button state changes."""
-        message = f"{'stop' if state else 'start'} {pin} {BUTTON_CONFIG[pin]}"
+        message = f"{'stop' if state else 'start'} {pin} {BUTTON_CONFIG[pin]} locked: {self.lock_hardware_buttons}"
         print(message)
         if not self.lock_hardware_buttons:
             web_server.print_to_log(message)
@@ -81,14 +81,17 @@ class MainController:
             self.lock_hardware_buttons = False
             web_server.print_to_log("unlocked hardware buttons")
         
-        if not self.lock_hardware_buttons:
-            print("changed")
+        elif not self.lock_hardware_buttons:
+            print("changed", pin)
             if state == 0:
                 self._set_source(pin)
+                web_server.print_to_log("locked hardware buttons -")
+                self.lock_hardware_buttons = True
                 web_server.set_source_external(pin) # tell webserver
             else:
                 if pin == self.current_mode:
                     self._disable_all_capabilities()
+                    self.lock_hardware_buttons = False
                     web_server.set_source_external(9)
     
     def set_source_external(self, pin):

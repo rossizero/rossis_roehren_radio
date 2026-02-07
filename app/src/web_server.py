@@ -49,7 +49,7 @@ async def index():
     return f"""
         <html>
             <head>
-                <title>Radio Control</title>
+                <title>Rossi's Röhren Radio</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body {{ font-family: sans-serif; padding: 20px; background: #f4f4f4; text-align: center; }}
@@ -80,7 +80,7 @@ async def index():
             </head>
             <body>
                 <div class="container">
-                    <h1>📻 Radio Source</h1>
+                    <h1>Rossi's Röhren Radio</h1>
                     <div class="grid">
                         {buttons_html}
                     </div>
