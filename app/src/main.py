@@ -198,7 +198,7 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
 
-        controller.vc.set_volume(33)
+        controller.vc.set_volume(23)
         web_thread = threading.Thread(
             target=web_server.run_web_server, 
             args=(controller,),
