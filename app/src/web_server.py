@@ -20,6 +20,7 @@ class AppState:
         self.logs = []        
         self.controller = None
         self.volume = 33
+        self.volume_locked = True
     
     def add_log(self, message):
         timestamp = time.strftime('%d.%m.%Y %H:%M:%S')
@@ -72,6 +73,9 @@ async def index():
 
                     /* Slider Styling */
                     .vol-container {{ margin: 30px 0; padding: 20px; background: #eee; border-radius: 10px; }}
+                    .lock-btn {{ margin-top: 15px; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }}
+                    .lock-btn.locked {{ background: #dc3545; }}
+                    .lock-btn.unlocked {{ background: #28a745; }}
                     .slider {{ width: 100%; height: 15px; border-radius: 5px; background: #ddd; outline: none; cursor: pointer; }}
 
                     pre {{ background:#222; color:#0f0; padding:15px; height:200px; overflow-y:auto; 
@@ -87,6 +91,9 @@ async def index():
                     <div class="vol-container">
                         <h3>Volume: <span id="volLabel">{state.volume}</span>%</h3>
                         <input type="range" min="0" max="100" value="{state.volume}" class="slider" id="volSlider" oninput="updateVolume(this.value)">
+                        <button id="volLockBtn" class="lock-btn {'locked' if state.volume_locked else 'unlocked'}" onclick="toggleVolumeLock()">
+                            WHEEL {'LOCKED' if state.volume_locked else 'UNLOCKED'}
+                        </button>
                     </div>
                     <hr style="margin: 30px 0;">
                     <input type="text" id="configInput" value="{state.config_str}" style="padding:8px;">
@@ -112,6 +119,19 @@ async def index():
                         await fetch('/set_volume?val=' + val);
                     }}
 
+                    function showVolumeLock(locked) {{
+                        const btn = document.getElementById('volLockBtn');
+                        btn.className = 'lock-btn ' + (locked ? 'locked' : 'unlocked');
+                        btn.innerText = locked ? 'WHEEL LOCKED' : 'WHEEL UNLOCKED';
+                        window.volumeLocked = locked;
+                    }}
+
+                    async function toggleVolumeLock() {{
+                        const locked = !window.volumeLocked;
+                        await fetch('/set_volume_lock?locked=' + locked);
+                        showVolumeLock(locked);
+                    }}
+
                     async function updateConfig() {{
                         const v = document.getElementById('configInput').value;
                         await fetch('/update?val=' + encodeURIComponent(v));
@@ -128,6 +148,8 @@ async def index():
                                 slider.value = data.volume;
                                 document.getElementById('volLabel').innerText = data.volume;
                             }}
+
+                            showVolumeLock(data.volume_locked);
 
                             // 2. Update Active Button
                             document.querySelectorAll('.source-btn').forEach(btn => {{
@@ -154,6 +176,7 @@ async def index():
                     slider.ontouchstart = () => {{ window.isUserTouchingSlider = true; }};
                     slider.ontouchend = () => {{ window.isUserTouchingSlider = false; }};
 
+                    window.volumeLocked = {'true' if state.volume_locked else 'false'};
                     setInterval(syncStatus, 500);
                 </script>
             </body>
@@ -196,10 +219,18 @@ def set_volume(val: int):
         state.add_log(f"Volume changed to {val}")
     return {"status": "ok"}
 
+@app.get("/set_volume_lock")
+def set_volume_lock(locked: bool):
+    state.volume_locked = locked
+    if state.controller:
+        state.controller.set_volume_lock(locked)
+    return {"status": "ok"}
+
 # 3. Threading Helper
 def run_web_server(controller_instance):
     state.controller = controller_instance
     state.volume = controller_instance.vc.get_volume()
+    state.volume_locked = controller_instance.lock_hardware_volume
     # Disable signal handlers so it can run in a background thread
     config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="error")
     server = uvicorn.Server(config)
@@ -213,6 +244,7 @@ def get_status():
     return {
         "active_pin": state.active_pin,
         "volume": state.volume,
+        "volume_locked": state.volume_locked,
         "logs": "\n".join(state.logs[-100:])
     }
 

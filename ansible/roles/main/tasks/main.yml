@@ -24,7 +24,7 @@
     name: 
       - smbus2
       - gpiod
-      - playsound
+      - playsound==1.2.2
       - fastapi
       - uvicorn
     virtualenv: /home/{{ user }}/{{ folder }}/venv

@@ -59,6 +59,7 @@ class MainController:
         self.volume_speed = math.pi / 2.0
         self.max_volume_step = 13.13
         self.lock_hardware_buttons = False
+        self.lock_hardware_volume = True
         print("Controller initialized.")
 
     def _set_source(self, pin):
@@ -101,6 +102,9 @@ class MainController:
 
     def rotation_callback(self, direction, speed_kmh):
         """Callback for wheel rotation events."""
+        if self.lock_hardware_volume:
+            print(f"Wheel rotation in '{direction}' with speed: {speed_kmh:.2f} km/h ignored, volume locked")
+            return
         change = self.volume_speed * direction * speed_kmh
         change =  max(-self.max_volume_step, min(change, self.max_volume_step))
         print(f"Wheel rotation in '{direction}' with speed: {speed_kmh:.2f} km/h and changing volume {change}")
@@ -108,6 +112,10 @@ class MainController:
         print(self.vc.get_volume())
         web_server.print_to_log(f"Volume changed to: {self.vc.get_volume()}")
         web_server.state.volume = self.vc.get_volume()
+
+    def set_volume_lock(self, locked):
+        self.lock_hardware_volume = locked
+        web_server.print_to_log(f"{'locked' if locked else 'unlocked'} hardware volume")
 
     def stop(self):
         """
